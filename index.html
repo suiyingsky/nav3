@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>选择标签</title>
+  <style>
+    :root {
+      --16: .16rem;
+      --14: .14rem
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      font-size: var(--14);
+    }
+
+    .ask-layout {
+      width: 100vw;
+      position: fixed;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      top: 0;
+      bottom: 0;
+
+      input {
+        width: 95%;
+        height: 40px;
+        font-size: var(--16);
+        margin-bottom: var(--16);
+        outline: none;
+        border-radius: 5px;
+        border-color: transparent;
+        text-indent: 1em;
+
+        &:focus {
+          border-color: #0099e5;
+        }
+      }
+
+      button {
+        -webkit-appearance: none;
+        outline: none;
+        padding: 8px 32px;
+        border: none;
+        background: #0099e5;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: var(--16);
+      }
+
+      button:disabled {
+        background: #999;
+      }
+    }
+
+    .tag-layout {
+      height: 300px;
+      background: #fff;
+
+      .seach {
+        display: flex;
+        margin: var(--16) var(--16) 0;
+        border: .01rem solid #ccc;
+        border-radius: 5px;
+
+        span {
+          padding: 6px 10px;
+          font-size: .2rem;
+        }
+
+        .search-input {
+          flex: 1 0;
+          border: none;
+          outline: none;
+          border-radius: 5px;
+          text-indent: 1em;
+          font-size: var(--16);
+        }
+      }
+
+      .search-list {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px;
+
+        .list {
+          padding: 4px 8px;
+          border: 4px;
+          border: 1px solid #ccc;
+          margin: 0 10px 10px 0px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .list-active {
+          color: #0099e5;
+        }
+      }
+    }
+  </style>
+</head>
+
+<body>
+  
+  <div class="ask-layout">
+    <input type="text" placeholder="Please enter your name" class="nameInput" spellcheck="true">
+    <button class="nameBtn">
+      confirm
+    </button>
+  </div>
+  <div class="tag-layout">
+    <div class="seach">
+      <input type="text" placeholder="Please enter a label filter" class="search-input">
+      <span onclick="deressingTag()">🔍</span>
+    </div>
+    <div class="search-list">
+    </div>
+  </div>
+  <script>
+    (function setRem(doc = documnet, win = window, size = 375) {
+      const docEl = doc.documentElement;
+      const mode = 'orientationchange' in window ? 'orientationchange' : 'resize';
+      const getRem = () => {
+        const width = docEl.clientWidth; // 屏幕像素
+        let rem = width / size * 100;
+        docEl.style.fontSize = rem + 'px'; // 初次设定
+        const realSize = () => {
+          const vnode = document.createElement('div');
+          vnode.style.cssText = 'width: 1rem';
+          document.body.append(vnode);
+          const realWidth = getComputedStyle(vnode, null).getPropertyValue('width').replace('px', '');
+          vnode.remove();
+          return realWidth;
+        }
+        const vnodeWidth = realSize();
+        if (rem != vnodeWidth) {
+          rem = rem / vnodeWidth;
+          docEl.style.fontSize = rem * 100 + 'px';
+        }
+      }
+      win.addEventListener(mode, getRem, false);
+      doc.addEventListener('ready', getRem, false);
+      !doc.addEventListener ? null : getRem();
+    })(document, window);
+
+    const doms = {
+      input: document.querySelector(".nameInput"),
+      btn: document.querySelector(".nameBtn"),
+      layer: document.querySelector(".ask-layout"),
+      tag: document.getElementsByClassName('.list'),
+      tagParent: document.querySelector('.search-list'),
+      tagInput: document.querySelector('.search-input')
+    }
+    doms.btn.setAttribute("disabled", true);
+    doms.input.oninput = function() {
+      if (!this.value.trim()) {
+        doms.btn.setAttribute("disabled".true);
+      } else {
+        doms.btn.removeAttribute("disabled");
+      }
+    }
+    doms.btn.onclick = function() {
+      // fetch
+      doms.layer.style.display = "none";
+    }
+    let searchList = [];
+    while (searchList.length < 30) {
+      searchList.push({
+        tag: Math.random().toString(16).slice(2, Math.trunc(Math.random() * 5) + 4),
+        isSelect: false
+      });
+    }
+
+    createTagElement(searchList);
+    function createTagElement(tagList) {
+      let html =  tagList.map((item, index) => {
+        if (item.isSelect) {
+          return `<span class="list list-active">${item.tag}</span>`;
+        } else {
+          return `<span class="list">${item.tag}</span>`;
+        }
+      }).join('');
+      document.querySelector('.search-list').innerHTML = html;
+      const tags = document.querySelectorAll('.list');
+      for (let i = 0, len = tags.length; i < len; i++) {
+        tags[i].onclick = function() {
+          this.classList.toggle('list-active');
+          tagList[i].isSelect = this.classList.contains('list-active') ? true : false;
+        }
+      }
+    }
+
+   function deressingTag() {
+    const dressList = searchList.filter(item => item.tag.includes(doms.tagInput.value));
+    createTagElement(dressList);
+   }
+
+  </script>
+</body>
+
+</html>
